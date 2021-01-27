@@ -93,10 +93,8 @@ namespace CSh_Pilot_1
 
 		static bool AreDifferentChars(ref string word, string primaryWord)
 		{
-			word.ToLower();
-			primaryWord.ToLower();
-			var differentСhars = from character in word
-								 where !primaryWord.Contains(character)
+			var differentСhars = from character in word.ToLower()
+								 where !primaryWord.ToLower().Contains(character)
 								 select character;
 			if (differentСhars.Count() > 0)
 				return true;
