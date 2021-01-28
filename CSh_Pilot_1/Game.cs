@@ -5,70 +5,72 @@ namespace CSh_Pilot_1
 {
 	class Game
 	{
+		const byte PrimaryWordMinLength = 8;
+		const byte PrimaryWordMaxLength = 30;
+		const byte StepAttempts = 3;
+		const byte PlayersNumber = 2;
+
 		static void Main(string[] args)
 		{
 			Console.WriteLine("===========  Игра в слова  ===========");
 			Console.Write("Введите первоначальное слово: ");
-			string primaryWord = EnterWord();
+			string primaryWord = EnterWord(PrimaryWordMinLength, PrimaryWordMaxLength);
 
 			Console.WriteLine("\nПравила:");
 			Console.WriteLine($"\t1) кол-во символов не должно превышать {primaryWord.Length};");
 			Console.WriteLine($"\t2) слова должны содержать буквы слова \"{primaryWord}\";");
-			Console.WriteLine("\t3) у каждого игрока по 3 попытки.");
+			Console.WriteLine($"\t3) у каждого игрока по {StepAttempts} попытки.");
 
 			Console.WriteLine("\n!!! Игра началась !!!");
-			byte player = 1;
-			bool stopGame = false;
-			while (!stopGame)
+
+			for (byte i = 1; i <= PlayersNumber; i++)
 			{
-				Console.WriteLine($"\nИгрок {player}:");
-				PlayerStep(ref primaryWord, out stopGame);
-				if (!stopGame)
+				Console.WriteLine($"\nИгрок {i}:");
+				if (PlayerStep(primaryWord, StepAttempts))
 				{
-					player++;
-					if (player > 2) player = 1;
+					if (++i > PlayersNumber)
+						Console.WriteLine("\nИгра окончена.\nИгрок 1 победил!");
+					else
+						Console.WriteLine("\nИгра окончена.\nИгрок 2 победил!");
+					break;
+				}
+				else
+				{
+					if (i == PlayersNumber) i = 0;
 				}
 			}
 
-			if (player == 1) player = 2;
-			else player = 1;
-
-			Console.WriteLine($"\nИгра окончена.\nИгрок {player} победил!");
 			Console.ReadKey();
 		}
 
-		static void PlayerStep(ref string primaryWord, out bool stopGame)
+		static bool PlayerStep(string primaryWord, byte attemptsNumber)
 		{
-			string newWord = "";
-			stopGame = false;
-			bool endStep = false;
-			byte attempt = 1;
-			while(!endStep)
+			bool stopGame = false;
+
+			for (byte i = 1; i <= attemptsNumber; i++)
 			{
-				Console.Write($"[{attempt}/3]: ");
-				newWord = EnterWord(1, (byte)primaryWord.Length);
-				if (AreDifferentChars(ref newWord, primaryWord))
+				Console.Write($"[{i}/3]: ");
+				string newWord = EnterWord(1, (byte)primaryWord.Length);
+				if (AreDifferentChars(newWord, primaryWord))
 				{
-					if (attempt < 3)
-					{
+					if (i < attemptsNumber)
 						Console.WriteLine("Почти! Попробуй ещё раз ^_^");
-						endStep = false;
-						attempt++;
-					}
 					else
 					{
-						endStep = true;
 						stopGame = true;
+						break;
 					}
 				}
 				else
 				{
-					endStep = true;
+					break;
 				}
 			}
+
+			return stopGame;
 		}
 
-		static string EnterWord(byte minLength = 8, byte maxLength = 30)
+		static string EnterWord(byte minLength, byte maxLength)
 		{
 			string newWord = "";
 			bool endReading = false;
@@ -91,15 +93,6 @@ namespace CSh_Pilot_1
 			return newWord;
 		}
 
-		static bool AreDifferentChars(ref string word, string primaryWord)
-		{
-			var differentСhars = from character in word.ToLower()
-								 where !primaryWord.ToLower().Contains(character)
-								 select character;
-			if (differentСhars.Count() > 0)
-				return true;
-			else
-				return false;
-		}
+		static bool AreDifferentChars(string word, string primaryWord) => word.Any(t => !primaryWord.Contains(t));
 	}
 }
